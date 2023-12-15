@@ -29,6 +29,8 @@ public:
     
     void retrieveHistoricalPrices();
     
+    void Filewriter();
+    
     std::string convertDateFormat(const std::string& inputDate);
     
     std::tm subtractFinancialDays(const std::tm& currentDate);
@@ -43,6 +45,135 @@ public:
 // 	written = fwrite(ptr, size, nmemb, stream);
 // 	return written;
 // }
+void HistoricalPricesRetriever::Filewrite(){
+    vector<string> symbolList;
+	populateSymbolVector(symbolList);
+    fp = fopen(resultfilename, "wb");
+    if (handle)
+	{
+		string url_common = "https://eodhistoricaldata.com/api/eod/";
+		string start_date = "2023-11-01";
+		string end_date = "2023-11-30";
+		string api_token = "656cb6bd815a15.50045816";  // You must replace this API token with yours
+
+		vector<string>::iterator itr = symbolList.begin();
+		for (; itr != symbolList.end(); itr++)
+		{
+			struct MemoryStruct data;
+			data.memory = NULL;
+			data.size = 0;
+
+			string symbol = *itr;
+			string url_request = url_common + symbol + ".US?" + "from=" + start_date + "&to=" + end_date + "&api_token=" + api_token + "&period=d";
+			curl_easy_setopt(handle, CURLOPT_URL, url_request.c_str());
+
+			//adding a user agent
+			curl_easy_setopt(handle, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:74.0) Gecko/20100101 Firefox/74.0");
+			curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, 0);
+			curl_easy_setopt(handle, CURLOPT_SSL_VERIFYHOST, 0);
+			fprintf(fp, "Symbol = %s\n", symbol.c_str());
+
+			curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
+			curl_easy_setopt(handle, CURLOPT_WRITEDATA, fp);
+			result = curl_easy_perform(handle);
+			fclose(fp);
+
+			//fprintf(fp, "%c", '\n');
+			double lret=0.0;
+
+			// check for errors 
+			if (result != CURLE_OK) {
+				fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(result));
+				return -1;
+			}
+
+			curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data2);
+			curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void*)&data);
+
+			// perform, then store the expected code in result
+			result = curl_easy_perform(handle);
+
+			if (result != CURLE_OK)
+			{
+				// if errors have occured, tell us what is wrong with result
+				fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(result));
+				return 1;
+			}
+			fp = fopen(resultfilename, "wb");
+			fprintf(fp, "Symbol = %s\n", symbol.c_str());
+			fclose(fp);
+			
+			stringstream sData;
+			sData.str(data.memory);
+			string sValue, sDate;
+			double dValue = 0;
+			string line;
+			int c=0;
+			double prev=0.0;
+			double curr=0.0;
+			string adj_str;
+			cout << symbol << endl;;
+			fp = fopen(resultfilename, "ab");
+			while (getline(sData, line)) {
+				size_t found = line.find('-');
+				if (found != std::string::npos)
+				{
+					fp = fopen(resultfilename, "ab");
+					cout << line << endl;
+					sDate = line.substr(0, line.find_first_of(','));
+					line.erase(line.find_last_of(','));
+					sValue = line.substr(line.find_last_of(',') + 1);
+					line.erase(line.find_last_of(','));
+					adj_str=line.substr(line.find_last_of(',')+1);
+
+
+					dValue = strtod(sValue.c_str(), NULL);
+					if(c==0){
+						prev=dValue;
+						lret=0.000000;
+						fprintf(fp, "sDate= %s, ", sDate.c_str());
+						fprintf(fp, "dDailyReturn=%f\n",lret);
+
+						
+					}
+					else{
+						curr=dValue;
+						lret=log(curr/prev);
+						fprintf(fp, "sDate= %s, ", sDate.c_str());
+						fprintf(fp, "dDailyReturn= %f\n",lret);
+						prev=curr;
+					
+
+						
+					}
+					c++;
+					fclose(fp);
+					cout << sDate << " " << std::fixed << ::setprecision(2) << dValue << endl;
+				}
+			}
+			
+			free(data.memory);
+			data.size = 0;
+		}
+		
+
+
+	}
+	else
+	{
+		fprintf(stderr, "Curl init failed!\n");
+		return -1;
+	}
+
+	// cleanup since you've used curl_easy_init  
+	curl_easy_cleanup(handle);
+
+	// release resources acquired by curl_global_init() 
+	curl_global_cleanup();
+
+	return 0;
+
+}
 void HistoricalPricesRetriever :: retrieveHistoricalPrices(){
     const char resultfilename[FILENAME_MAX] = "results.txt";
     CURL* handle;
