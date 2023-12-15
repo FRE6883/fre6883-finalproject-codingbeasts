@@ -17,6 +17,9 @@ int main() {
 
     int N = 60;
     
+    
+    while()
+    {
     cout << "\n\nMenu: " << endl;
     cout << "1) Enter N to retrieve 2N+1 historical prices for all stocks" << endl;
     cout << "2) Pull information for one stock from one group. " << endl;
@@ -54,6 +57,6 @@ int main() {
         }
     }
     
-    
+    }
         return 0;
     }
