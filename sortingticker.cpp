@@ -34,41 +34,34 @@ void inputData(const vector<vector<string>> data, vector<string> & beats, vector
     
     int size = data.size();
     
-    if(size!=3000){
-        cout << size << endl;
-        cout << "size not 3000";
-        //return -1;
-    }
-    else{
-        cout << "size correct";
-    }
+    cout << "data size: " << size; 
     
     // WILL NEED TO CHANGE THESE INDEXES
     //FOR rinput1.csv test file
-    for(int i=0;i<data.size();i++){
-        if(i>=0 && i<=9){
-            beats.push_back(data[i][0]);
-        } 
-        else if(i>=10 && i<=19){
-            meets.push_back(data[i][0]);
-        } 
-        else{
-            misses.push_back(data[i][0]);
-        }
-    }
-    
-    // // for main rinput 3000 data points file
     // for(int i=0;i<data.size();i++){
-    //     if(i>=0 && i<=999){
+    //     if(i>=0 && i<=9){
     //         beats.push_back(data[i][0]);
     //     } 
-    //     else if(i>=1000 && i<=1999){
+    //     else if(i>=10 && i<=19){
     //         meets.push_back(data[i][0]);
     //     } 
     //     else{
     //         misses.push_back(data[i][0]);
     //     }
     // }
+    
+    // for main rinput 3000 data points file
+    for(int i=0;i<data.size();i++){
+        if(i>=0 && i<=786){
+            beats.push_back(data[i][0]);
+        } 
+        else if(i>=787 && i<=1659){
+            meets.push_back(data[i][0]);
+        } 
+        else{
+            misses.push_back(data[i][0]);
+        }
+    }
 }
 
 int main(){
@@ -81,7 +74,8 @@ int main(){
     
     ifstream inputFile;
     
-    inputFile.open("rinput1.csv");
+    //inputFile.open("rinput1.csv");
+    inputFile.open("Russell3000EarningsAnnouncements.csv");
     
     string line = "";
     
@@ -119,7 +113,7 @@ int main(){
         
         
         
-        cout << ticker << " " << surpriseptage << endl; 
+        //cout << ticker << " " << surpriseptage << endl; 
         
         data.push_back(input);
         
@@ -128,18 +122,21 @@ int main(){
     
     data.erase(data.begin());
     
-    cout << "data acquired:" << endl;
+    //cout << "data acquired:" << endl;
     
     
-    cout << "before sort:" << endl;
-    printVector(data);
+    //cout << "before sort:" << endl;
+    //printVector(data);
     
     sort(data.begin(), data.end(), sortcol);
-    cout << "after sort:" << endl;
-    printVector(data);
+    //cout << "after sort:" << endl;
+    //printVector(data);
     
     inputData(data, beats, meets, misses);
     
+    
+    cout << "first dim of data: " << data.size() << endl;
+    cout << "second dim of data: " << data[0].size() << endl;
     
     cout << "\nbeats vector:" << endl;
     
@@ -152,6 +149,8 @@ int main(){
     cout << "\nmisses vector:" << endl;
     
     print1dvec(misses);
+    
+    cout << endl;
     
     return 0;
 }
