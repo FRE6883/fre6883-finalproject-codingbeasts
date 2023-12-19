@@ -96,6 +96,8 @@ namespace fre
 		std::map<string, string> months = { { "JAN", "01" },{ "FEB", "02" },{ "MAR", "03" },{ "APR", "04" }, { "MAY", "05" },{ "JUN", "06" },{ "JUL", "07" },{ "AUG", "08" },
 		{ "SEP", "09" },{ "OCT", "10" },{ "NOV", "11" },{ "DEC", "12" } };
 	
+		if(Date.size()==8) Date = "0" + Date;
+		
 		string day = Date.substr(0, 2);
 		string month = Date.substr(3, 3);
 		for (int i = 0; i < 3; i++)
